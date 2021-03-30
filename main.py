@@ -191,19 +191,19 @@ def start():
     multi = partial(multiPlayer, menu)
 
     head = Button(menu, text="-- Welcome! Select a game mode! --",
-                  activeforeground='grey',
-                  activebackground='white', bg='grey',
-                  fg='grey', width=50, font='ariel', bd=5)
+                  activeforeground='black',
+                  activebackground='white', bg='black',
+                  fg='white', width=30, font='ariel', bd=5)
     singleButton = Button(menu, text="Single Player", command=single,
-                          activeforeground='red',
-                          activebackground="yellow", bg="red",
-                          fg="yellow", width=50, font='summer', bd=5)
-    multiButton = Button(menu, text="Multi Player", command=multi, activeforeground='red',
-                         activebackground="yellow", bg="red", fg="yellow",
-                         width=50, font='summer', bd=5)
+                          activeforeground='blue',
+                          activebackground="white", bg="blue",
+                          fg="white", width=30, font='ariel', bd=5)
+    multiButton = Button(menu, text="MultiPlayer", command=multi, activeforeground='blue',
+                         activebackground="white", bg="blue", fg="white",
+                         width=30, font='ariel', bd=5)
     exitButton = Button(menu, text="Exit", command=menu.quit, activeforeground='red',
                         activebackground="yellow", bg="red", fg="yellow",
-                        width=50, font='summer', bd=5)
+                        width=30, font='ariel', bd=5)
     head.pack(side='top')
     singleButton.pack(side='top')
     multiButton.pack(side='top')

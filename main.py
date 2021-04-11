@@ -6,7 +6,7 @@ from tkinter import messagebox
 from copy import deepcopy
 
 sign = 0
-
+player, opponent = 'x', 'o'
 global board
 board = [[" " for x in range(3)] for y in range(3)]
 
@@ -20,6 +20,52 @@ def winner(b, l):
             (b[0][2] == l and b[1][2] == l and b[2][2] == l) or
             (b[0][0] == l and b[1][1] == l and b[2][2] == l) or
             (b[0][2] == l and b[1][1] == l and b[2][0] == l))
+
+
+def evaluate(b):
+    # Checking for Rows for X or O victory.
+    for row in range(3):
+        if b[row][0] == b[row][1] and b[row][1] == b[row][2]:
+            if b[row][0] == player:
+                return 10
+            elif b[row][0] == opponent:
+                return -10
+
+    # Checking for Columns for X or O victory.
+    for col in range(3):
+
+        if b[0][col] == b[1][col] and b[1][col] == b[2][col]:
+
+            if b[0][col] == player:
+                return 10
+            elif b[0][col] == opponent:
+                return -10
+
+    # Checking for Diagonals for X or O victory.
+    if b[0][0] == b[1][1] and b[1][1] == b[2][2]:
+
+        if b[0][0] == player:
+            return 10
+        elif b[0][0] == opponent:
+            return -10
+
+    if b[0][2] == b[1][1] and b[1][1] == b[2][0]:
+
+        if b[0][2] == player:
+            return 10
+        elif b[0][2] == opponent:
+            return -10
+
+    # Else if none of them have won then return 0
+    return 0
+
+
+def isMovesLeft(b):
+    for i in range(3):
+        for j in range(3):
+            if (b[i][j] == '_'):
+                return True
+    return False
 
 
 def gameboard_single(b, l1, l2):
@@ -53,6 +99,7 @@ def singlePlayer(b):
 
 def get_text_singleplayer(i, j, b, l1, l2):
     global sign
+
     if board[i][j] == ' ':
         if sign % 2 == 0:
             l1.config(state=DISABLED)
@@ -80,12 +127,12 @@ def get_text_singleplayer(i, j, b, l1, l2):
         box = messagebox.showinfo("Tie Game", "Tie Game")
     if x:
         if sign % 2 != 0:
-            move = computerActions()
+            move = computerActions(board)
             button[move[0]][move[1]].config(state=DISABLED)
             get_text_singleplayer(move[0], move[1], b, l1, l2)
 
 
-def computerActions():
+def computerActions(b):
     possiblemove = []
     for i in range(len(board)):
         for j in range(len(board[i])):
@@ -101,20 +148,10 @@ def computerActions():
                 boardcopy[i[0]][i[1]] = let
                 if winner(boardcopy, let):
                     return i
-        corner = []
-        for i in possiblemove:
-            if i in [[0, 0], [0, 2], [2, 0], [2, 2]]:
-                corner.append(i)
-        if len(corner) > 0:
-            move = random.randint(0, len(corner) - 1)
-            return corner[move]
-        edge = []
-        for i in possiblemove:
-            if i in [[0, 1], [1, 0], [1, 2], [2, 1]]:
-                edge.append(i)
-        if len(edge) > 0:
-            move = random.randint(0, len(edge) - 1)
-            return edge[move]
+
+        bestMove = findBestMove(b)
+        move = [bestMove[0], bestMove[1]]
+        return move
 
 
 def multiPlayer(b):
@@ -179,9 +216,102 @@ def isfree(i, j):
 def isfull():
     flag = True
     for i in board:
-        if (i.count(' ') > 0):
+        if (i.count(" ") > 0):
             flag = False
     return flag
+
+
+def minimax(b, depth, isMax):
+    score = evaluate(board)
+
+    # If Maximizer has won the game return his/her
+    # evaluated score
+    if score == 10:
+        return score
+
+    # If Minimizer has won the game return his/her
+    # evaluated score
+    if score == -10:
+        return score
+
+    # If there are no more moves and no winner then
+    # it is a tie
+    if isfull():
+        return 0
+
+    # If this maximizer's move
+    if isMax:
+        best = -1000
+
+        # Traverse all cells
+        for i in range(3):
+            for j in range(3):
+
+                # Check if cell is empty
+                if b[i][j] == ' ':
+                    # Make the move
+                    b[i][j] = player
+
+                    # Call minimax recursively and choose
+                    # the maximum value
+                    best = max(best, minimax(b,
+                                             depth + 1,
+                                             not isMax))
+
+                    # Undo the move
+                    b[i][j] = ' '
+        return best
+
+    # If this minimizer's move
+    else:
+        best = 1000
+
+        # Traverse all cells
+        for i in range(3):
+            for j in range(3):
+
+                # Check if cell is empty
+                if b[i][j] == ' ':
+                    # Make the move
+                    board[i][j] = opponent
+
+                    # Call minimax recursively and choose
+                    # the minimum value
+                    best = min(best, minimax(board, depth + 1, not isMax))
+
+                    # Undo the move
+                    board[i][j] = ' '
+        return best
+
+
+def findBestMove(b):
+    bestVal = -1000
+    bestMove = (-1, -1)
+
+    # Traverse all cells, evaluate minimax function for
+    # all empty cells. And return the cell with optimal
+    # value.
+    for i in range(3):
+        for j in range(3):
+
+            # Check if cell is empty
+            if b[i][j] == ' ':
+
+                # Make the move
+                b[i][j] = player
+
+                # compute evaluation function for this
+                # move.
+                moveVal = minimax(board, 0, False)
+
+                # Undo the move
+                board[i][j] = ' '
+
+                if moveVal > bestVal:
+                    bestMove = (i, j)
+                    bestVal = moveVal
+
+    return bestMove
 
 
 def start():
